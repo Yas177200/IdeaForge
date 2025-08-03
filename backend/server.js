@@ -3,6 +3,10 @@ const express = require('express');
 const cors = require('cors');
 const { Sequelize } = require('sequelize');
 
+const db = require('./models');
+
+const authRouter = require('./routes/auth');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -18,6 +22,8 @@ sequelize
 app.get('/', (req, res) => {
     res.send('Hello from IdeaForge backend');
 });
+
+app.use('/auth', authRouter);
 
 // serve start
 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from "../Api"
 
 export default function Login() {
-    const [form, setForm] = useState({email: '', password: '', name: ''})
+    const [form, setForm] = useState({email: '', password: ''})
     const [error, setError] = useState('')
     const navigate = useNavigate()
 

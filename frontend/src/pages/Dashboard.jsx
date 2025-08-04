@@ -3,6 +3,7 @@ import { Navigate, Link } from 'react-router-dom';
 import api from '../Api';
 import MyProjects from '../Components/MyProjects';
 import JoinedProjects from '../Components/JoinedProjects';
+import '../css/dashbaord.css'
 
 export default function Dashboard() {
   const token = localStorage.getItem('token');

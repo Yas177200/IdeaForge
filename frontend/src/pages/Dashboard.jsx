@@ -1,41 +1,45 @@
-// frontend/src/pages/Dashboard.jsx
 import { useState, useEffect } from 'react';
+import { Navigate, Link } from 'react-router-dom';
 import api from '../Api';
-import { Navigate } from 'react-router-dom';
+import MyProjects from '../Components/MyProjects';
+import JoinedProjects from '../Components/JoinedProjects';
 
 export default function Dashboard() {
-  const [user, setUser] = useState(null);
   const token = localStorage.getItem('token');
+  const [mine, setMine]     = useState(null);
+  const [joined, setJoined] = useState(null);
+  const [error, setError]   = useState('');
 
   useEffect(() => {
     if (!token) return;
-    api.get('/auth/me', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(res => setUser(res.data.user))
-    .catch(() => setUser(null));
+    api.get('/projects/mine', { headers: { Authorization: `Bearer ${token}` } })
+       .then(res => setMine(res.data.projects))
+       .catch(err => setError(err.response?.data?.message));
+    api.get('/projects/joined', { headers: { Authorization: `Bearer ${token}` } })
+       .then(res => setJoined(res.data.projects))
+       .catch(err => setError(err.response?.data?.message));
   }, [token]);
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-  if (user === null) {
-    return <p>Loading your dashboard…</p>;
-  }
+  if (!token) return <Navigate to="/login" replace />;
+  if (mine === null || joined === null) return <p>Loading projects…</p>;
+  if (error) return <p className="error">Error: {error}</p>;
 
   return (
-    <div className="dashboard-container">
-      <h1>Welcome back, {user.name}!</h1>
-      <p>Email: {user.email}</p>
+    <div className="dashboard">
+      <h1>Welcome back!</h1>
+      <div className="dashboard-actions">
+        <Link to="/projects/new"><button>Create Project</button></Link>
+        <Link to="/projects/join"><button>Join Project</button></Link>
+      </div>
 
-      {/* TODO: Replace with real “My Projects” & “Joined Projects” lists */}
       <section>
         <h2>My Projects</h2>
-        <p>(Coming soon…)</p>
+        <MyProjects projects={mine} />
       </section>
+
       <section>
         <h2>Joined Projects</h2>
-        <p>(Coming soon…)</p>
+        <JoinedProjects projects={joined} />
       </section>
     </div>
   );

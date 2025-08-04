@@ -1,0 +1,30 @@
+// frontend/src/components/JoinedProjects.jsx
+import React from 'react';
+import PropTypes from 'prop-types';
+
+export default function JoinedProjects({ projects }) {
+  if (!projects.length) {
+    return <p>You haven’t joined any projects yet.</p>;
+  }
+
+  return (
+    <ul>
+      {projects.map(project => (
+        <li key={project.id} className="project-item">
+          <strong>{project.name}</strong>
+          <p>{project.shortSummary}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+JoinedProjects.propTypes = {
+  projects: PropTypes.arrayOf(
+    PropTypes.shape({
+      id:           PropTypes.number.isRequired,
+      name:         PropTypes.string.isRequired,
+      shortSummary: PropTypes.string.isRequired
+    })
+  ).isRequired
+};

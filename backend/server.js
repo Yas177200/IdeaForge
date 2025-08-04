@@ -5,7 +5,9 @@ const { Sequelize } = require('sequelize');
 
 const db = require('./models');
 
-const authRouter = require('./routes/auth');
+
+
+
 
 const app = express();
 app.use(cors());
@@ -23,8 +25,11 @@ app.get('/', (req, res) => {
     res.send('Hello from IdeaForge backend');
 });
 
+const authRouter = require('./routes/auth');
 app.use('/auth', authRouter);
 
+const projectsRouter = require('./routes/projects');
+app.use('/projects', projectsRouter);
 // serve start
 
 const PORT = process.env.PORT || 3000;

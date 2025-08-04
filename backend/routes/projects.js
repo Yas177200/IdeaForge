@@ -2,6 +2,7 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { Project, ProjectMembership } = require('../models');
 const auth = require('../middleware/auth');
+const { Op } = require('sequelize');
 
 const router = express.Router();
 
@@ -36,11 +37,15 @@ router.get('/mine', auth, async (req, res) => {
 });
 
 router.get('/joined', auth, async (req, res) => {
-    const memebership = await ProjectMembership.findAll({
-        where: {userId: req.user.id},
-        include: [ {model: Project} ]
+    const memberships = await ProjectMembership.findAll({
+        where: {
+            userId: req.user.id,
+            role:   { [Op.ne]: 'OWNER' }  // exclude OWNERSHIP
+        },
+        include: [ { model: Project } ]
     });
-    const projects = memebership.map(m => m.Project);
+    const projects = memberships.map(m => m.Project);
+    
     res.json({projects});
 });
 

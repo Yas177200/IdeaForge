@@ -20,6 +20,19 @@ fs
     models[model.name] = model;
   });
 
+
+// 🔍 DEBUG: list loaded model names
+
+console.log('🔍 Loaded models:', Object.keys(models));
+
+// 3) Run associations if defined
+Object.values(models)
+.forEach(model => {
+if (typeof model.associate === 'function') {
+model.associate(models);
+}
+});
+
 // 3) Run associations if defined
 Object.values(models)
   .forEach(model => {

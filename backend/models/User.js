@@ -8,5 +8,14 @@ module.exports = (sequelize, DataTypes) => {
         avatarUrl:      DataTypes.STRING,
         bio:            DataTypes.TEXT
     });
+
+User.associate = models => {
+  User.hasMany(models.Project, { foreignKey: 'ownerId' });
+
+  User.hasMany(models.ProjectMembership, {
+    foreignKey: 'userId'
+  });
+};
+
     return User;
 }

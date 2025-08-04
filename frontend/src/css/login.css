@@ -1,0 +1,78 @@
+/* login.css */
+.auth-container {
+  max-width: 400px;
+  margin: 60px auto;
+  padding: 2rem;
+  background: #f5f8ff;
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+  font-family: system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;
+}
+
+.auth-container h2 {
+  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  text-align: center;
+  color: #1f3c88;
+}
+
+.auth-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.auth-container input {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  background: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-container input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+.auth-container button {
+  margin-top: 0.5rem;
+  padding: 0.85rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #3b82f6;
+  color: #ffffff;
+  font-weight: 600;
+  transition: background .2s, transform .1s;
+}
+
+.auth-container button:hover {
+  background: #2563eb;
+}
+
+.auth-container button:active {
+  transform: scale(.98);
+}
+
+.error {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 0.5rem 1rem;
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 500px) {
+  .auth-container {
+    margin: 20px 1rem;
+    padding: 1.5rem;
+  }
+}

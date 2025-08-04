@@ -1,6 +1,6 @@
-// frontend/src/components/JoinedProjects.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
+import '../css/my-joined-projects.css'
 
 export default function JoinedProjects({ projects }) {
   if (!projects.length) {

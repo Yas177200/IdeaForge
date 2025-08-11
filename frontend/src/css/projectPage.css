@@ -1,0 +1,137 @@
+/* Project Page (scoped by .project-page) */
+.project-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.topbar a {
+  text-decoration: none;
+  font-weight: 600;
+  color: #047481;              /* aqua-ish text */
+}
+
+.topbar a:hover {
+  text-decoration: underline;
+}
+
+/* New card form */
+.card-form {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #f9fafb;
+}
+
+.card-form h3 {
+  margin-top: 0;
+}
+
+.card-form label {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+.card-form input,
+.card-form textarea,
+.card-form select {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.5rem;
+  outline: none;
+}
+
+.card-form input:focus,
+.card-form textarea:focus,
+.card-form select:focus {
+  border-color: #06b6d4;       /* aqua accent */
+  box-shadow: 0 0 0 3px rgba(6,182,212,0.15);
+}
+
+.card-form .checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-form button {
+  margin-top: 0.5rem;
+}
+
+/* Cards list */
+.cards-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.card-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  background: #ffffff;
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.card-type {
+  font-weight: 600;
+  color: #0e7490;              /* deeper aqua */
+}
+
+.card-status.open {
+  color: #b45309;              /* amber */
+  font-weight: 600;
+}
+
+.card-status.done {
+  color: #059669;              /* green */
+  font-weight: 600;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.btn-primary {
+  background: #06b6d4;         /* aqua */
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: #0891b2;
+}
+
+.btn-outline {
+  background: #ffffff;
+  color: #047481;
+  border-color: #06b6d4;
+}
+
+.btn-outline:hover {
+  background: #ecfeff;
+}

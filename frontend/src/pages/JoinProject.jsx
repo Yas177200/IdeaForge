@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../Api';
+import api from '../api';
 import '../css/joinproject.css'
 
 export default function JoinProject() {

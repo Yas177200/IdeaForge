@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import '../css/my-joined-projects.css'
+import { Link } from 'react-router-dom';
 
 export default function JoinedProjects({ projects }) {
   if (!projects.length) {
@@ -13,6 +14,8 @@ export default function JoinedProjects({ projects }) {
         <li key={project.id} className="project-item">
           <strong>{project.name}</strong>
           <p>{project.shortSummary}</p>
+          <p>id: {project.id}</p>
+          <Link className="btn btn-outline" to={`/projects/${project.id}`}>Open</Link>
         </li>
       ))}
     </ul>

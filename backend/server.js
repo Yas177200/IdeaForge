@@ -5,10 +5,6 @@ const { Sequelize } = require('sequelize');
 
 const db = require('./models');
 
-
-
-
-
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -25,12 +21,17 @@ app.get('/', (req, res) => {
     res.send('Hello from IdeaForge backend');
 });
 
+// routes here
+//1
 const authRouter = require('./routes/auth');
 app.use('/auth', authRouter);
-
+//2
 const projectsRouter = require('./routes/projects');
 app.use('/projects', projectsRouter);
-// serve start
+//3
+const cards = require('./routes/cards');
+app.use('/', cards);
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, ()=>{

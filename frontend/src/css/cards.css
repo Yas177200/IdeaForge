@@ -1,0 +1,9 @@
+.cards-list { list-style: none; padding: 0; }
+.card-item { border: 1px solid #e5e7eb; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem; }
+.card-head { display: flex; justify-content: space-between; margin-bottom: 0.25rem; font-size: 0.9rem; }
+.card-type { font-weight: 600; }
+.card-status.done { color: #059669; }
+.card-status.open { color: #b45309; }
+.card-form { border: 1px solid #e5e7eb; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
+.card-form label { display: block; margin: 0.5rem 0; }
+.card-form .checkbox { display: flex; align-items: center; gap: 0.5rem; }

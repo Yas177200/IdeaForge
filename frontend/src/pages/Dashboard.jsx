@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
-import api from '../Api';
+import api from '../api';
 import MyProjects from '../Components/MyProjects';
 import JoinedProjects from '../Components/JoinedProjects';
 import '../css/dashbaord.css'

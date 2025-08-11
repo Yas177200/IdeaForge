@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from 'react-router-dom'
 import '../css/register.css'
-import api from "../Api"
+import api from "../api"
 
 export default function Register() {
     const [form, setForm] = useState({email: '', password: '', name: ''})
@@ -14,9 +14,8 @@ export default function Register() {
     const handleSubmit = async e => {
         e.preventDefault()
         try{
-            const {data} = await api.post('/auth/register', form);
+            await api.post('/auth/register', form);
 
-            localStorage.setItem('token', data.token);
             navigate('/');
         }catch (err){
             setError(err.response?.data?.message || 'Registration failed');

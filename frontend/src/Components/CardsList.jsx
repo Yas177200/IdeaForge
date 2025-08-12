@@ -10,6 +10,7 @@ export default function CardsList({ cards }) {
                 <li key={c.id} className="card-item">
                     <div className="card-head">
                         <span className="card-type">{c.type}</span>
+                        <span>{c.id}</span>
                         <span className={`card-status ${c.completed ? 'done' : 'open'}`}>
                             {c.completed? 'Completed' : 'Open'}
                         </span>

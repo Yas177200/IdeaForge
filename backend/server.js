@@ -31,6 +31,12 @@ app.use('/projects', projectsRouter);
 //3
 const cards = require('./routes/cards');
 app.use('/', cards);
+//4
+const commentsRouter = require('./routes/comments');
+app.use('/', commentsRouter);
+//5
+const likesRouter = require('./routes/likes');
+app.use('/', likesRouter)
 
 
 const PORT = process.env.PORT || 3000;

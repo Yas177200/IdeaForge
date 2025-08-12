@@ -12,10 +12,11 @@ export default function JoinedProjects({ projects }) {
     <ul>
       {projects.map(project => (
         <li key={project.id} className="project-item">
-          <strong>{project.name}</strong>
-          <p>{project.shortSummary}</p>
-          <p>id: {project.id}</p>
-          <Link className="btn btn-outline" to={`/projects/${project.id}`}>Open</Link>
+          <Link to={`/projects/${project.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <strong>{project.name}</strong>
+            <p>{project.shortSummary}</p>
+            <p>id: {project.id}</p>
+          </Link>
         </li>
       ))}
     </ul>

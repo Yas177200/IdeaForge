@@ -1,6 +1,6 @@
 const express = require('express');
 const auth = require('../middleware/auth');
-const { Comment } = require('../models');
+const { Comment, User } = require('../models');
 const { canAccessByCard } = require('./_access');
 
 const router = express.Router();
@@ -12,10 +12,19 @@ router.get('/cards/:cardId/comments', auth, async (req, res) =>{
 
     const comments = await Comment.findAll({
         where: {cardId},
+        include: [{model: User, attributes: ['id', 'name']}],
         order: [['createdAt', 'ASC']]
     });
 
-    res.json({ comments })
+    res.json({
+        comments: comments.map(c => ({
+            id: c.id,
+            content: c.content,
+            authorId: c.authorId,
+            authorName: c.User?.name ?? 'Unkown',
+            createdAt: c.createdAt
+        }))
+    })
 })
 
 

@@ -1,7 +1,7 @@
-// frontend/src/components/CommentsThread.jsx
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import api from '../api';
+import '../css/comments.css';
 
 export default function CommentsThread({ cardId }) {
   const token = localStorage.getItem('token');
@@ -22,6 +22,7 @@ export default function CommentsThread({ cardId }) {
       setErr(e.response?.data?.message || 'Failed to load comments');
     }
   };
+
 
   useEffect(() => { load(); }, [cardId]);
 
@@ -63,15 +64,15 @@ export default function CommentsThread({ cardId }) {
         <ul className="comments-list">
           {comments.map(c => (
             <li key={c.id} className="comment">
-              <div className="comment-meta">
-                <span className="author">{c.authorName ?? 'Unknown'}</span>
-                {c.authorId === myId && (
-                  <button className="link danger" onClick={() => remove(c.id)}>
-                    Delete
-                  </button>
-                )}
-              </div>
-              <p>{c.content}</p>
+                <div className="comment-meta">
+                    <span className="author">{c.authorName || me.name || 'You'}</span>
+                    {c.authorId === myId && (
+                    <button className="link danger" onClick={() => remove(c.id)}>
+                        Delete
+                    </button>
+                    )}
+                </div>
+                <p>{c.content}</p>
             </li>
           ))}
         </ul>

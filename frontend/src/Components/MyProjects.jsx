@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import '../css/my-joined-projects.css'
 import { Link } from 'react-router-dom';
+import CopyInviteButton from './CopyInviteButton';
 
 export default function MyProjects({ projects }) {
   if (!projects.length) {
@@ -17,6 +18,7 @@ export default function MyProjects({ projects }) {
             <p>{project.shortSummary}</p>
             <p>id: {project.id}</p>
           </Link>
+          <CopyInviteButton joinLink={project.joinLink} />
         </li>
       ))}
     </ul>

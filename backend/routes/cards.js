@@ -12,7 +12,7 @@ async function canAccessProject(userId, projectId) {
     if (!project) return {ok: false, status: 404, message: 'Project not found.'};
     if (project.ownerId === userId) return {ok: true, project};
 
-    const memebership = await Project.findOne({where: {userId, projectId} });
+    const memebership = await ProjectMembership.findOne({where: {userId, projectId} });
     if (!memebership) return {ok: false, status: 403, message: 'not a project member.'};
 
     return {ok: true, project, memebership};

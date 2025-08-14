@@ -23,13 +23,9 @@ export default function NewCardForm({ projectId, onCreated }) {
     e.preventDefault();
     setError('');
     try {
-      await api.post(
-        `/projects/${projectId}/cards`,
-        form,
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-      );
+      await api.post(`/projects/${projectId}/cards`, form);
       setForm({ type: 'IDEA', title: '', description: '', imageUrl: '', completed: false });
-      onCreated?.();
+      onCreated?.(); // refetch from parent
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create card');
     }
@@ -62,17 +58,12 @@ export default function NewCardForm({ projectId, onCreated }) {
         <input name="imageUrl" value={form.imageUrl} onChange={handleChange} />
       </label>
 
-      <label className="checkbox">
-        <input
-          type="checkbox"
-          name="completed"
-          checked={form.completed}
-          onChange={handleChange}
-        />
+      <label style={{ display: 'inline-flex', gap: '.4rem', alignItems: 'center' }}>
+        <input type="checkbox" name="completed" checked={form.completed} onChange={handleChange} />
         Mark as completed
       </label>
 
-      <button type="submit">Add Card</button>
+      <button type="submit" className="btn btn-primary">Add Card</button>
     </form>
   );
 }

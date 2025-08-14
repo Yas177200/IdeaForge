@@ -7,3 +7,47 @@
 .card-form { border: 1px solid #e5e7eb; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
 .card-form label { display: block; margin: 0.5rem 0; }
 .card-form .checkbox { display: flex; align-items: center; gap: 0.5rem; }
+
+
+.card-edit-form {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f9fafb;
+}
+
+.card-edit-form label {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+.card-edit-form input,
+.card-edit-form textarea,
+.card-edit-form select {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.5rem;
+  outline: none;
+}
+
+.card-edit-form input:focus,
+.card-edit-form textarea:focus,
+.card-edit-form select:focus {
+  border-color: #06b6d4;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+}
+
+.card-edit-form .inline {
+  display: inline-flex;
+  gap: .4rem;
+  align-items: center;
+}
+
+.card-edit-form .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .5rem;
+  margin-top: .5rem;
+}
+

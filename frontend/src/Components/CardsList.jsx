@@ -77,7 +77,9 @@ function CardRow({ card, onCardUpdated }) {
                 Edit
               </button>
             )}
-            <span><input type="checkbox" checked={card.completed} onChange={toggleCompleted} disabled={busy} /></span>            
+            {isAuthor && (
+              <span><input type="checkbox" checked={card.completed} onChange={toggleCompleted} disabled={busy} /></span>            
+            )}
           </div>
 
           {showComments && (

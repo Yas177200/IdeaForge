@@ -15,10 +15,16 @@ Project.associate = models => {
 
   // membership records for this project
   Project.hasMany(models.ProjectMembership, {
-    foreignKey: 'projectId'
+    foreignKey: 'projectId',
+    onDelete: 'CASCADE',
+    hooks: true
   });
+  Project.hasMany(models.Card, {
+    foreignKey: 'projectId',
+    onDelete: 'CASCADE',
+    hooks: true
+  });
+
 };
-
-
   return Project;
 };

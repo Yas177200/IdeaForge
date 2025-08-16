@@ -135,3 +135,40 @@
 .btn-outline:hover {
   background: #ecfeff;
 }
+
+
+/* Header */
+.project-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+.project-header .summary { margin: .25rem 0 .5rem; color: #475569; }
+.project-header .tags { display: flex; gap: .25rem; flex-wrap: wrap; margin: .25rem 0; }
+.project-header .tag {
+  background: #ecfeff; color: #0e7490; border: 1px solid #06b6d4;
+  border-radius: 999px; padding: .1rem .5rem; font-size: .8rem;
+}
+.project-header .actions { display: flex; gap: .5rem; }
+
+/* Modal */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.35);
+  display: grid; place-items: center; z-index: 50;
+}
+.modal {
+  width: min(680px, 92vw);
+  background: #fff;
+  border-radius: 10px;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+}
+.modal form label { display: block; margin: .5rem 0; }
+.modal input, .modal textarea { width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: .5rem; }
+.modal .actions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .5rem; }

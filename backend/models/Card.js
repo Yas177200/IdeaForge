@@ -11,8 +11,18 @@ module.exports = (sequelize, DataTypes) => {
 
     Card.associate = models => {
         Card.belongsTo(models.User, { foreignKey: 'authorId' });
-        Card.belongsTo(models.Project, { foreignKey: 'projectId' })
-    };
+        Card.belongsTo(models.Project, { foreignKey: 'projectId' });
+        Card.hasMany(models.Comment, {
+            foreignKey: 'cardId',
+            onDelete: 'CASCADE',
+            hooks: true
+        });
+        Card.hasMany(models.Like, {
+            foreignKey: 'cardId',
+            onDelete: 'CASCADE',
+            hooks: true
+        });
+};
     
     return Card;
 }

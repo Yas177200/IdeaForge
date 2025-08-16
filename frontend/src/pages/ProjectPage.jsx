@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, Link, Navigate } from 'react-router-dom';
+import { useParams, Link, Navigate, useNavigate } from 'react-router-dom';
 import api from '../api';
 import CardsList from '../components/CardsList';
+import ProjectHeader from '../Components/ProjectHeader';
 import NewCardForm from '../components/NewCardForm';
 import '../css/projectPage.css'
 
@@ -12,6 +13,7 @@ export default function ProjectPage() {
   const { id } = useParams(); 
   const [cards, setCards] = useState(null);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
   const [filter, setFilter] = useState('ALL'); 
 
   const fetchCards = useCallback(async () => {
@@ -44,6 +46,11 @@ export default function ProjectPage() {
       <div className="topbar">
         <Link to="/">← Back to Dashboard</Link>
       </div>
+      <ProjectHeader
+        projectId={id}
+        onDelete={()=>navigate('/')}
+        onUpdated={()=> {/* a;lksdf;alskdjf;alskjf;lksadlkjsdflkjfsdjkl;ljk;sdf */}}
+      />
 
       <NewCardForm projectId={id} onCreated={fetchCards} />
 

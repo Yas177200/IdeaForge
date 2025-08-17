@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import api from '../api';
 
 export default function ProjectHeader({ projectId, onDelete, onUpdated}) {
-    const me = JSON.parse(localStorage.getItem('user') || null);
+    const me = JSON.parse(localStorage.getItem('user'));
     const [project, setProject] = useState(null);
     const [error, setError] = useState('');
     const [editing, setEditing] = useState(false);
@@ -28,7 +28,7 @@ export default function ProjectHeader({ projectId, onDelete, onUpdated}) {
     const handleDelete = async () => {
         if (!confirm('Delete this Project? This cannot be undone!')) return;
         try{
-            await api.apply(`projects/${projectId}`);
+            await api.delete(`projects/${projectId}`);
             onDelete?.()
         }catch (err) {
             alert(e.response?.data?.message || 'Delete Failed.')
@@ -117,7 +117,8 @@ function EditProjectModal({ project, onClose, onSaved }) {
             <input name="shortSummary" value={form.shortSummary} onChange={change} disabled={saving}/>
           </label>
           <label>Full Description
-            <textarea name="fullDescription" value={form.fullDescription} onChange={change} disabled={saving}/>
+            <textarea name="fullDescription" value={form.fullDescription} onChange={change} disabled={saving}
+              style={{height: '90px'}}/>
           </label>
           <label>Tags (comma-separated)
             <input name="tags" value={form.tags} onChange={change} disabled={saving}/>

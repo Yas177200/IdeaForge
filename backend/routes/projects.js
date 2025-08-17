@@ -100,7 +100,7 @@ router.get('/:id', auth, async (req, res) => {
             fullDescription: project.fullDescription,
             tags: project.tags,
             joinLink: project.joinLink,
-            onwerId: project.ownerId,
+            ownerId: project.ownerId,
             ownerName: project.User?.name || 'Owner',
             createdAt: project.createdAt
         }

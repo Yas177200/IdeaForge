@@ -170,5 +170,5 @@
   border: 1px solid #e5e7eb;
 }
 .modal form label { display: block; margin: .5rem 0; }
-.modal input, .modal textarea { width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: .5rem; }
+.modal input, .modal textarea { width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: .5rem;}
 .modal .actions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .5rem; }

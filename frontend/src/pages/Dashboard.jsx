@@ -27,7 +27,6 @@ export default function Dashboard() {
         if (!alive) return;
         setMine(a.data.projects || []);
         setJoined(b.data.projects || []);
-        console.log(a.data.projects, b.data.projects, '❌❌❌❌❌❌');
         setError('');
       } catch (e) {
         setError(e.response?.data?.message || 'Failed to load dashboard');

@@ -1,8 +1,8 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
-const { Project, ProjectMembership, User} = require('../models');
+const { Project, ProjectMembership, User, Card} = require('../models');
 const auth = require('../middleware/auth');
-const { Op } = require('sequelize');
+const { Op, fn, literal, col } = require('sequelize');
 
 const router = express.Router();
 
@@ -16,6 +16,30 @@ async function onwerOnly(userId, projectId) {
     if (project.ownerId !== userId) return {ok: false, status: 403, message: 'Owner only!!'}
 
     return {ok: true, project};
+}
+
+async function getCardCountsByProjectIds(projectIds) {
+  if (!projectIds.length) return {};
+  const rows = await Card.findAll({
+    attributes: [
+      'projectId',
+      [fn('COUNT', col('id')), 'total'],
+      // Postgres-safe CASE; `"completed"` is boolean
+      [fn('SUM', literal('CASE WHEN "completed" = false THEN 1 ELSE 0 END')), 'open']
+    ],
+    where: { projectId: { [Op.in]: projectIds } },
+    group: ['projectId']
+  });
+
+  const map = {};
+  for (const r of rows) {
+    const pid = Number(r.get('projectId'));
+    map[pid] = {
+      total: Number(r.get('total') || 0),
+      open: Number(r.get('open') || 0),
+    };
+  }
+  return map;
 }
 
 router.post('/', auth, async (req, res) => {
@@ -44,21 +68,66 @@ router.post('/', auth, async (req, res) => {
 });
 
 router.get('/mine', auth, async (req, res) => {
-    const projects = await Project.findAll({where: {ownerId: req.user.id} });
-    res.json({projects});
+  const projects = await Project.findAll({
+    where: { ownerId: req.user.id },
+    order: [['createdAt', 'DESC']]
+  });
+
+  const ids = projects.map(p => p.id);
+  const counts = await getCardCountsByProjectIds(ids);
+
+  const payload = projects.map(p => {
+    const c = counts[p.id] || { total: 0, open: 0 };
+    return {
+      id: p.id,
+      name: p.name,
+      shortSummary: p.shortSummary,
+      fullDescription: p.fullDescription,
+      tags: p.tags,
+      joinLink: p.joinLink,       // owners can copy invite
+      createdAt: p.createdAt,
+      totalCards: c.total,
+      openCards: c.open,
+      completedCards: c.total - c.open
+    };
+  });
+
+  res.json({ projects: payload });
 });
 
+
 router.get('/joined', auth, async (req, res) => {
-    const memberships = await ProjectMembership.findAll({
-        where: {
-            userId: req.user.id,
-            role:   { [Op.ne]: 'OWNER' }  // exclude OWNERSHIP
-        },
-        include: [ { model: Project } ]
-    });
-    const projects = memberships.map(m => m.Project);
-    
-    res.json({projects});
+  const memberships = await ProjectMembership.findAll({
+    where: {
+      userId: req.user.id,
+      role: { [Op.ne]: 'OWNER' } // exclude ownership
+    },
+    include: [{ model: Project }],
+    order: [['createdAt', 'DESC']]
+  });
+
+  const joinedProjects = memberships
+    .map(m => m.Project)
+    .filter(Boolean);
+
+  const ids = joinedProjects.map(p => p.id);
+  const counts = await getCardCountsByProjectIds(ids);
+
+  const payload = joinedProjects.map(p => {
+    const c = counts[p.id] || { total: 0, open: 0 };
+    return {
+      id: p.id,
+      name: p.name,
+      shortSummary: p.shortSummary,
+      tags: p.tags,
+      createdAt: p.createdAt,
+      totalCards: c.total,
+      openCards: c.open,
+      completedCards: c.total - c.open
+    };
+  });
+
+  res.json({ projects: payload });
 });
 
 router.post('/join', auth, async (req, res) => {

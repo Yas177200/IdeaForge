@@ -16,7 +16,6 @@ export default function JoinProject() {
         { joinLink },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
-      // back to dashboard
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to join project');

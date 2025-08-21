@@ -226,4 +226,27 @@ router.delete('/:id', auth, async (req, res) => {
     res.json({ok: true});
 })
 
+
+
+router.get('/p/pending', auth, async (req, res) => {
+  const memberships = await ProjectMembership.findAll({
+    where: { userId: req.user.id, status: 'PENDING' },
+    include: [{ model: Project }]
+  });
+
+  const payload = (memberships || [])
+    .map(m => m.Project)
+    .filter(Boolean)
+    .map(p => ({
+      id: p.id,
+      name: p.name,
+      shortSummary: p.shortSummary,
+      tags: p.tags,
+      createdAt: p.createdAt
+    }));
+
+  res.json({ projects: payload });
+});
+
+
 module.exports = router;

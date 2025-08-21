@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import api from '../api';
 import ProjectTile from '../Components/ProjectTile';
+import PendingTile from '../Components/PendingTile';
 import '../css/dashbaord.css'
 
 export default function Dashboard() {
@@ -11,6 +12,7 @@ export default function Dashboard() {
   const [tab, setTab] = useState('MINE'); 
   const [mine, setMine] = useState([]);
   const [joined, setJoined] = useState([]);
+  const [pending, setPending] = useState([]);
   const [q, setQ] = useState('');
   const [sort, setSort] = useState('NEWEST'); 
 
@@ -20,13 +22,15 @@ export default function Dashboard() {
     let alive = true;
     (async () => {
       try {
-        const [a, b] = await Promise.all([
+        const [a, b, c] = await Promise.all([
           api.get('/projects/mine'),
-          api.get('/projects/joined')
+          api.get('/projects/joined'),
+          api.get('/projects/p/pending')
         ]);
         if (!alive) return;
         setMine(a.data.projects || []);
         setJoined(b.data.projects || []);
+        setPending(c.data.projects || []);
         setError('');
       } catch (e) {
         setError(e.response?.data?.message || 'Failed to load dashboard');
@@ -60,7 +64,11 @@ export default function Dashboard() {
     return arr;
   };
 
-  const list = tab === 'MINE' ? filterAndSort(mine) : filterAndSort(joined);
+  const list = tab === 'MINE'
+    ? filterAndSort(mine)
+    : tab === 'JOINED'
+    ? filterAndSort(joined) 
+    : filterAndSort(pending);
 
   if (error) return <p className="error">{error}</p>;
 
@@ -85,6 +93,14 @@ export default function Dashboard() {
             aria-selected={tab === 'JOINED'}
           >
             Joined
+          </button>
+          <button 
+            className={tab==='PENDING' ? 'active':''} 
+            onClick={() => setTab('PENDING')} 
+            role="tab" 
+            aria-selected={tab==='PENDING'}
+          >
+            Pending
           </button>
         </div>
 
@@ -112,9 +128,13 @@ export default function Dashboard() {
       </div>
 
       <div className="project-grid">
-        {list.map(p => (
-          <ProjectTile key={p.id} project={p} showInvite={tab === 'MINE'} />
-        ))}
+        {tab !== 'PENDING' ? (
+          list.map(p => (
+            <ProjectTile key={p.id} project={p} showInvite={tab === 'MINE'} />
+          ))
+        ) : (
+          list.map(p => <PendingTile key={p.id} project={p} />)
+        )}
         {list.length === 0 && <p className="muted">No projects match your filters.</p>}
       </div>
     </div>

@@ -6,6 +6,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM('OWNER','MEMBER','PUBLIC_GUEST'),
       allowNull: false,
       defaultValue: 'MEMBER'
+    },
+    status: {
+      type: DataTypes.ENUM('PENDING', 'APPROVED'),
+      allowNull: false,
+      defaultValue: 'PENDING'
     }
   });
 

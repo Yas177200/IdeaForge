@@ -1,5 +1,5 @@
 const express = require('express');
-const { OP, where } = require('sequelize');
+const { Op } = require('sequelize');
 const auth = require('../middleware/auth');
 const { Card, Project, ProjectMembership } = require('../models');
 
@@ -12,7 +12,13 @@ async function canAccessProject(userId, projectId) {
     if (!project) return {ok: false, status: 404, message: 'Project not found.'};
     if (project.ownerId === userId) return {ok: true, project};
 
-    const memebership = await ProjectMembership.findOne({where: {userId, projectId} });
+    const memebership = await ProjectMembership.findOne({
+        where: {
+            userId,
+            projectId,
+            status: {[Op.or]: ['APPROVED', null]}
+        }
+    });
     if (!memebership) return {ok: false, status: 403, message: 'not a project member.'};
 
     return {ok: true, project, memebership};

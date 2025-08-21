@@ -42,6 +42,21 @@ async function getCardCountsByProjectIds(projectIds) {
   return map;
 }
 
+async function getPendingCountsByProjectIds(projectIds) {
+  if (!projectIds.length) return {};
+  const rows = await ProjectMembership.findAll({
+    attributes: ['projectId', [fn('COUNT', col('userId')), 'pending']],
+    where: { projectId: { [Op.in]: projectIds }, status: 'PENDING', role: 'MEMBER' },
+    group: ['projectId']
+  });
+  const map = {};
+  for (const r of rows) {
+    map[Number(r.get('projectId'))] = Number(r.get('pending') || 0);
+  }
+  return map;
+}
+
+
 router.post('/', auth, async (req, res) => {
     const {name, shortSummary, fullDescription, tags} = req.body;
     if (!name || ! shortSummary) {
@@ -75,6 +90,7 @@ router.get('/mine', auth, async (req, res) => {
 
   const ids = projects.map(p => p.id);
   const counts = await getCardCountsByProjectIds(ids);
+  const pending = await getPendingCountsByProjectIds(ids);
 
   const payload = projects.map(p => {
     const c = counts[p.id] || { total: 0, open: 0 };
@@ -84,11 +100,12 @@ router.get('/mine', auth, async (req, res) => {
       shortSummary: p.shortSummary,
       fullDescription: p.fullDescription,
       tags: p.tags,
-      joinLink: p.joinLink,       // owners can copy invite
+      joinLink: p.joinLink, 
       createdAt: p.createdAt,
       totalCards: c.total,
       openCards: c.open,
-      completedCards: c.total - c.open
+      completedCards: c.total - c.open,
+      pendingMembers: pending[p.id] || 0
     };
   });
 
@@ -100,7 +117,8 @@ router.get('/joined', auth, async (req, res) => {
   const memberships = await ProjectMembership.findAll({
     where: {
       userId: req.user.id,
-      role: { [Op.ne]: 'OWNER' } // exclude ownership
+      role: { [Op.ne]: 'OWNER' },
+      status: { [Op.or]: ['APPROVED', null] }
     },
     include: [{ model: Project }],
     order: [['createdAt', 'DESC']]
@@ -131,21 +149,30 @@ router.get('/joined', auth, async (req, res) => {
 });
 
 router.post('/join', auth, async (req, res) => {
-    const { joinLink } = req.body;
-    const project = await Project.findOne({where: {joinLink}});
-    if (!project) {
-        return res.status(404).json({message: 'Invalid invite link'});
-    }
+  const { joinLink } = req.body;
+  if (!joinLink) return res.status(400).json({ message: 'joinLink is required' });
 
-    const [memebership, created] = await ProjectMembership.findOrCreate({
-        where: {
-            projectId: project.id,
-            userId: req.user.id
-        },
-        defaults: {role: 'MEMBER'}
-    });
-    res.json({project, joined: created});
-})
+  const project = await Project.findOne({ where: { joinLink } });
+  if (!project) return res.status(404).json({ message: 'Invalid invite code' });
+  if (project.ownerId === req.user.id) {
+    return res.status(400).json({ message: 'You are the project owner' });
+  }
+
+  const [membership, created] = await ProjectMembership.findOrCreate({
+    where: { userId: req.user.id, projectId: project.id },
+    defaults: { role: 'MEMBER', status: 'PENDING' }
+  });
+
+  if (!created) {
+    if (membership.status === 'APPROVED' || membership.status == null) {
+      return res.json({ ok: true, status: 'APPROVED', message: 'Already a member' });
+    }
+    return res.json({ ok: true, status: 'PENDING', message: 'Request already pending' });
+  }
+
+  return res.status(201).json({ ok: true, status: 'PENDING', message: 'Join request sent' });
+});
+
 
 router.get('/:id', auth, async (req, res) => {
     const pid = Number(req.params.id);

@@ -1,8 +1,15 @@
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import CopyInviteButton from './CopyInviteButton';
+import MembersModal from './MembersModal';
 
 export default function ProjectTile({ project, showInvite }) {
+  const [showModal, setShowModal] = useState(false);
+  const [pendingCount, setPendingCount] = useState(Number(project.pendingMembers || 0));
+
+  const badgeClass = pendingCount > 0 ? 'danger' : 'ok';
+
   return (
     <div className="project-tile">
       <div className="pt-head">
@@ -26,7 +33,29 @@ export default function ProjectTile({ project, showInvite }) {
         {showInvite && project.joinLink && (
           <CopyInviteButton joinLink={project.joinLink} label="Copy Invite" />
         )}
+        {showInvite && (
+        <button
+          className="btn btn-outline btn-members"
+          onClick={() => setShowModal(true)}
+          title="Approve/decline pending members"
+        >
+          Pending Members
+          {pendingCount > 0 && (
+            <span className={`badge-overlay ${badgeClass}`}>{pendingCount}</span>
+          )}
+        </button>
+
+        )}
       </div>
+
+      {showModal && (
+        <MembersModal
+          projectId={project.id}
+          projectName={project.name}
+          onClose={() => setShowModal(false)}
+          onPendingDelta={(d) => setPendingCount(c => Math.max(0, c + d))}
+        />
+      )}
     </div>
   );
 }
@@ -39,7 +68,8 @@ ProjectTile.propTypes = {
     tags: PropTypes.array,
     joinLink: PropTypes.string,
     totalCards: PropTypes.number,
-    openCards: PropTypes.number
+    openCards: PropTypes.number,
+    pendingMembers: PropTypes.number
   }).isRequired,
   showInvite: PropTypes.bool
 };

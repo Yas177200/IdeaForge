@@ -15,7 +15,6 @@ export default function ProjectPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const [filter, setFilter] = useState('ALL'); 
-    console.log('❌❌❌❌❌❌❌❌❌❌❌❌❌❌',id);
 
   const fetchCards = useCallback(async () => {
     try {

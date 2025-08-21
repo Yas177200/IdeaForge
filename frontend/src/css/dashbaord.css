@@ -100,3 +100,80 @@ section h2 {
 .pill.total { background: #f0f9ff; color: #0ea5e9; }
 
 .pt-actions { display: flex; gap: .5rem; margin-top: .25rem; }
+
+/* Modal */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.35);
+  display: grid; place-items: center;
+  z-index: 100;
+}
+.modal {
+  width: min(640px, 92vw);
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+}
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: .5rem;
+}
+.modal-title { margin: 0; }
+
+/* Pending list */
+.pending-list { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; gap: .5rem; }
+.pending-row {
+  border: 1px solid #e5e7eb; border-radius: 10px; padding: .6rem;
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: .5rem;
+}
+.pending-row .info .name { font-weight: 700; }
+.pending-row .info .sub { color: #475569; font-size: .9rem; }
+.pending-row .actions { display: flex; gap: .4rem; }
+
+/* Button + badge on tile */
+.btn-with-badge { display: inline-flex; align-items: center; gap: .4rem; }
+.badge {
+  min-width: 1.25rem; height: 1.25rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px; font-size: .75rem; font-weight: 700;
+  padding: 0 .35rem; line-height: 1; user-select: none;
+}
+.badge.ok { background: #06b6d4; color: #fff; }     /* aqua when 0 */
+.badge.danger { background: #ef4444; color: #fff; } /* red when > 0 */
+
+
+.btn-members {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Small circle badge in top-right */
+.badge-overlay {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 4px;
+  border: 2px solid #fff; /* gives clean outline */
+}
+
+.badge-overlay.ok {
+  background: #06b6d4; /* aqua */
+  color: #fff;
+}
+.badge-overlay.danger {
+  background: #ef4444; /* red */
+  color: #fff;
+}

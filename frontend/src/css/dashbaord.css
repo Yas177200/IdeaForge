@@ -362,3 +362,7 @@ section h2 {
 .project-tile.pending {
   opacity: 0.95;
 }
+
+.pt-pending-note { display: flex; gap: .5rem; align-items: center; margin-top: .25rem; }
+.request-date { font-size: .8rem; color: #64748b; }
+.pt-actions { display: flex; gap: .5rem; margin-top: .5rem; }

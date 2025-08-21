@@ -39,6 +39,10 @@ export default function Dashboard() {
     return () => { alive = false; };
   }, []);
 
+  const handlePendingCancelled = (projectId) => {
+    setPending(prev => prev.filter(p => p.id !== projectId));
+  };
+
   const filterAndSort = (list) => {
     const ql = q.trim().toLowerCase();
     let arr = !ql ? list : list.filter(p => {
@@ -130,7 +134,7 @@ export default function Dashboard() {
       <div className="project-grid">
         {tab !== 'PENDING' ? (
           list.map(p => (
-            <ProjectTile key={p.id} project={p} showInvite={tab === 'MINE'} />
+            <ProjectTile key={p.id} project={p} onCancelled={handlePendingCancelled} showInvite={tab === 'MINE'} />
           ))
         ) : (
           list.map(p => <PendingTile key={p.id} project={p} />)

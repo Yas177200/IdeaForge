@@ -70,4 +70,22 @@ router.delete('/:id/members/:userId', auth, async (req, res) => {
   res.json({ ok: true });
 });
 
+router.delete('/:id/cancel/request', auth, async (req, res) => {
+  const pid = Number(req.params.id);
+  if (!Number.isFinite(pid)) return res.status(400).json({ message: 'Bad project id' });
+
+  const membership = await ProjectMembership.findOne({
+    where: { projectId: pid, userId: req.user.id }
+  });
+  if (!membership) return res.status(404).json({ message: 'No membership found' });
+  if (membership.role === 'OWNER') return res.status(400).json({ message: 'Owner cannot cancel' });
+  if (membership.status !== 'PENDING') {
+    return res.status(400).json({ message: 'Only PENDING requests can be canceled' });
+  }
+
+  await membership.destroy();
+  res.json({ ok: true });
+});
+
+
 module.exports = router;

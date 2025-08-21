@@ -230,19 +230,19 @@ router.delete('/:id', auth, async (req, res) => {
 
 router.get('/p/pending', auth, async (req, res) => {
   const memberships = await ProjectMembership.findAll({
-    where: { userId: req.user.id, status: 'PENDING' },
+    where: { userId: req.user.id, status: 'PENDING', role: 'MEMBER' },
     include: [{ model: Project }]
   });
 
-  const payload = (memberships || [])
-    .map(m => m.Project)
-    .filter(Boolean)
-    .map(p => ({
-      id: p.id,
-      name: p.name,
-      shortSummary: p.shortSummary,
-      tags: p.tags,
-      createdAt: p.createdAt
+ const payload = (memberships || [])
+    .filter(m => m.Project)
+    .map(m => ({
+      id: m.Project.id,
+      name: m.Project.name,
+      shortSummary: m.Project.shortSummary,
+      tags: m.Project.tags,
+      createdAt: m.Project.createdAt,
+      requestDate: m.createdAt
     }));
 
   res.json({ projects: payload });

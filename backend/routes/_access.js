@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const {Card, Project, ProjectMembership} = require('../models');
 
 async function canAccessByCard(userId, cardId) {
@@ -10,7 +11,7 @@ async function canAccessByCard(userId, cardId) {
     if (project.ownerId === userId) return {ok: true, project, card};
 
     const membership = await ProjectMembership.findOne({
-        where: { userId, projectId: card.projectId }
+        where: { userId, projectId: card.projectId, status: {[Op.or]: ['APPROVED', null]} }
     });
     if (!membership) return {ok: false, status: 404, message: 'Not a project member'};
 

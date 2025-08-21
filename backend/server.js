@@ -37,6 +37,9 @@ app.use('/', commentsRouter);
 //5
 const likesRouter = require('./routes/likes');
 app.use('/', likesRouter)
+//6
+const membersRouter = require('./routes/members');
+app.use('/projects', membersRouter);
 
 
 const PORT = process.env.PORT || 3000;

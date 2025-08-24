@@ -5,6 +5,8 @@ import CardsList from '../components/CardsList';
 import ProjectHeader from '../Components/ProjectHeader';
 import NewCardForm from '../components/NewCardForm';
 import '../css/projectPage.css'
+import ChatToggle from '../Components/ChatToggle';
+import ChatPanel from '../Components/ChatPanel';
 
 export default function ProjectPage() {
   const token = localStorage.getItem('token');
@@ -15,6 +17,7 @@ export default function ProjectPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const [filter, setFilter] = useState('ALL'); 
+  const [chatOpen, setChatOpen] = useState(false);
 
   const fetchCards = useCallback(async () => {
     try {
@@ -62,6 +65,9 @@ export default function ProjectPage() {
 
       <h2>Cards</h2>
       <CardsList cards={filtered} onCardUpdated={handleCardUpdated} />
+
+      <ChatToggle projectId={id} onOpen={() => setChatOpen(true)} />
+      <ChatPanel projectId={id} open={chatOpen} onClose={() => setChatOpen(false)} />
     </div>
   );
 }

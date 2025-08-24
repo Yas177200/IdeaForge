@@ -24,7 +24,6 @@ async function getCardCountsByProjectIds(projectIds) {
     attributes: [
       'projectId',
       [fn('COUNT', col('id')), 'total'],
-      // Postgres-safe CASE; `"completed"` is boolean
       [fn('SUM', literal('CASE WHEN "completed" = false THEN 1 ELSE 0 END')), 'open']
     ],
     where: { projectId: { [Op.in]: projectIds } },

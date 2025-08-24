@@ -8,7 +8,6 @@ export default function CopyInviteButton({ joinLink, label = 'Copy Invite' }) {
     if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
     } else {
-    // in case the first method did not work
     const ta = document.createElement('textarea');
     ta.value = text;
     ta.style.position = 'fixed';

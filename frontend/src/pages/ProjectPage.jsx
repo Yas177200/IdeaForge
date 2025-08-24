@@ -2,76 +2,122 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, Navigate, useNavigate } from 'react-router-dom';
 import api from '../api';
 import CardsList from '../components/CardsList';
-import ProjectHeader from '../Components/ProjectHeader';
-import NewCardForm from '../components/NewCardForm';
+import ProjectHeader from '../components/ProjectHeader';
+import ProjectSubnav from '../components/ProjectSubnav';
+import NewCardModal from '../components/NewCardModal';
+import CommentsModal from '../components/CommentsModal';
+import ChatPanel from '../components/ChatPanel';
 import '../css/projectPage.css'
-import ChatToggle from '../Components/ChatToggle';
-import ChatPanel from '../Components/ChatPanel';
-import ProjectSubnav from '../Components/ProjectSubnav';
 
 export default function ProjectPage() {
   const token = localStorage.getItem('token');
   if (!token) return <Navigate to="/login" replace />;
 
-  const { id } = useParams(); 
-  const [cards, setCards] = useState(null);
-  const [error, setError] = useState('');
+  const { id } = useParams(); // projectId
   const navigate = useNavigate();
-  const [filter, setFilter] = useState('ALL'); 
-  const [chatOpen, setChatOpen] = useState(false);
 
-  const fetchCards = useCallback(async () => {
+  const [project, setProject] = useState(null);
+  const [cards, setCards] = useState([]);
+  const [error, setError] = useState('');
+  const [filter, setFilter] = useState('ALL'); // ALL | OPEN | DONE
+  const [activeTab, setActiveTab] = useState('board'); // board | overview
+
+  const [newCardOpen, setNewCardOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [commentsFor, setCommentsFor] = useState(null); // card object
+
+  const loadProject = useCallback(async () => {
     try {
-      const { data } = await api.get(`/projects/${id}/cards`);
-      setCards(data.cards);
-      setError('');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load cards');
+      const { data } = await api.get(`/projects/${id}`);
+      setProject(data.project);
+    } catch (e) {
+      setError(e.response?.data?.message || 'Failed to load project');
     }
   }, [id]);
 
-  useEffect(() => { fetchCards(); }, [fetchCards]);
+  const loadCards = useCallback(async () => {
+    try {
+      const { data } = await api.get(`/projects/${id}/cards`);
+      setCards(data.cards || []);
+    } catch (e) {
+      setError(e.response?.data?.message || 'Failed to load cards');
+    }
+  }, [id]);
 
-  const handleCardUpdated = (updated) => {
-    setCards(prev => prev.map(c => (c.id === updated.id ? updated : c)));
-  };
+  useEffect(() => {
+    loadProject();
+    loadCards();
+  }, [loadProject, loadCards]);
 
-  if (cards === null) return <p>Loading…</p>;
+  const filtered = cards.filter(c => {
+    if (filter === 'OPEN') return !c.completed;
+    if (filter === 'DONE') return !!c.completed;
+    return true;
+  });
+
   if (error) return <p className="error">{error}</p>;
-
-  const filtered = cards.filter(c =>
-    filter === 'ALL' ? true :
-    filter === 'OPEN' ? !c.completed :
-    c.completed
-  );
+  if (!project) return <p>Loading…</p>;
 
   return (
     <div className="project-page">
       <div className="topbar">
+        <Link to="/">← Back to Dashboard</Link>
       </div>
-      <section id='overview'>
-        <ProjectHeader
+
+      <ProjectHeader
+        projectId={id}
+        onDeleted={() => navigate('/')}
+        onUpdated={(p) => setProject(p)}
+      />
+
+      <ProjectSubnav
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onOpenChat={() => setChatOpen(true)}
+        onOpenNewCard={() => setNewCardOpen(true)}
+        onBack={() => navigate('/')}
+      />
+
+      {activeTab === 'overview' ? (
+        <section style={{ marginTop: '1rem' }}>
+          <h2>Overview</h2>
+          <p><strong>Owner:</strong> {project.ownerName}</p>
+          {project.tags?.length ? (
+            <p><strong>Tags:</strong> {project.tags.join(', ')}</p>
+          ) : null}
+          <h3>Full Description</h3>
+          <p>{project.fullDescription || '—'}</p>
+        </section>
+      ) : (
+        <section id="cards" style={{ marginTop: '1rem' }}>
+          <div style={{ display:'flex', gap:'.5rem', margin:'.5rem 0' }}>
+            <button className={`btn ${filter==='ALL' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setFilter('ALL')}>All</button>
+            <button className={`btn ${filter==='OPEN' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setFilter('OPEN')}>Open</button>
+            <button className={`btn ${filter==='DONE' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setFilter('DONE')}>Completed</button>
+          </div>
+
+          <CardsList
+            cards={filtered}
+            onOpenComments={(card) => setCommentsFor(card)}
+          />
+        </section>
+      )}
+
+      {newCardOpen && (
+        <NewCardModal
           projectId={id}
-          onDelete={()=>navigate('/')}
-          onUpdated={()=> {/* a;lksdf;alskdjf;ajfsdjkl;ljk;sdf */}}
+          onCreated={loadCards}
+          onClose={() => setNewCardOpen(false)}
         />
-      </section>
-      <ProjectSubnav onOpenChat={() => setChatOpen(true)}/>
+      )}
 
-      <section id='cards' style={{scrollMarginTop: '5rem'}}>
-        <NewCardForm projectId={id} onCreated={fetchCards} />
-      </section>
+      {commentsFor && (
+        <CommentsModal
+          card={commentsFor}
+          onClose={() => setCommentsFor(null)}
+        />
+      )}
 
-      <div style={{ display: 'flex', gap: '.5rem', margin: '.5rem 0' }}>
-        <button className={`btn ${filter==='ALL' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setFilter('ALL')}>All</button>
-        <button className={`btn ${filter==='OPEN' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setFilter('OPEN')}>Open</button>
-        <button className={`btn ${filter==='DONE' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setFilter('DONE')}>Completed</button>
-      </div>
-
-      <h2>Cards</h2>
-      <CardsList cards={filtered} onCardUpdated={handleCardUpdated} />
-
-      <ChatToggle projectId={id} onOpen={() => setChatOpen(true)} />
       <ChatPanel projectId={id} open={chatOpen} onClose={() => setChatOpen(false)} />
     </div>
   );

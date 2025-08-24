@@ -9,11 +9,11 @@ export function connectProjectSocket(projectId) {
     path: SOCKET_PATH,
     auth: { token },
     query: { projectId: String(projectId) },
-    transports: ['polling', 'websocket'],  
+    transports: ['polling','websocket'],  
   });
 
   socket.on('connect_error', (err) => {
-    console.error('[socket] connect_error:', err?.message);
+    console.error('[socket] connect_error:', err?.message, err);
   });
 
   return socket;

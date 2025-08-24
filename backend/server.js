@@ -5,6 +5,7 @@ const { Sequelize } = require('sequelize');
 const http = require('http');
 const { Server } = require('socket.io');
 const { Op } = require('sequelize');
+const jwt = require('jsonwebtoken');
 
 //models
 const db = require('./models');
@@ -29,102 +30,92 @@ app.get('/', (req, res) => {
 //socket.io
 const server = http.createServer(app);
 
+//7
+const chatRouter = require('./routes/chat');
+app.use('/projects', chatRouter);
+
+
+
 const io = new Server(server, {
   cors: {
-    origin: [ 'http://localhost:5173' ],
+    origin: ['http://localhost:5173'], // add dev origins here
     methods: ['GET','POST'],
     credentials: true
-  },
-  // when prod deploy, configure a path here like this: abdulmala.de/socket.io
+  }
 });
+
+const preview = t => (typeof t === 'string' && t.length > 16 ? `${t.slice(0,8)}…${t.slice(-6)}` : t);
 
 async function canChat(userId, projectId) {
   const project = await Project.findByPk(projectId);
-  if (!project) return { ok: false, status: 404, message: 'Project not found' };
-  if (project.ownerId === userId) return { ok: true, project };
+  if (!project) return { ok:false, message:'Project not found' };
+  if (project.ownerId === userId) return { ok:true };
   const m = await ProjectMembership.findOne({
     where: { userId, projectId, status: { [Op.or]: ['APPROVED', null] } }
   });
-  if (!m) return { ok: false, status: 403, message: 'Not a project member' };
-  return { ok: true, project };
+  return m ? { ok:true } : { ok:false, message:'Not a project member' };
 }
 
-// backend/server.js (your io.use)
+// 🔎 handshake logger + strict auth
 io.use(async (socket, next) => {
-   try {
-     const token = socket.handshake.auth?.token;
-     if (!token) return next(new Error('No token'));
+  const origin = socket.handshake.headers.origin;
+  const rawToken = socket.handshake.auth?.token || socket.handshake.query?.token;
+  const projectIdRaw = socket.handshake.query?.projectId;
 
-     let payload;
-     try {
-       payload = jwt.verify(token, process.env.JWT_SECRET);
-     } catch (e) {
-       if (e.name === 'TokenExpiredError') return next(new Error('Token expired'));
-       return next(new Error('Bad token'));
-     }
-     const { userId } = payload;
-
-     const projectId = Number(socket.handshake.query?.projectId);
-     if (!Number.isFinite(projectId)) return next(new Error('Bad project id'));
-
-     socket.data.userId = userId;
-     socket.data.projectId = projectId;
-
-     const access = await canChat(userId, projectId);
-     if (!access.ok) return next(new Error(access.message)); // e.g., 'Not a project member'
-     return next();
-   } catch (e) {
-     console.error('[socket auth error]', e);
-     return next(new Error(e.message || 'Unauthorized'));
-   }
-});
-
-
-io.on('connection', socket => {
-  const { userId, projectId } = socket.data;
-  const room = `project:${projectId}`;
-  socket.join(room);
-
-  console.log(`INFO chat: user ${userId} joined room ${room}`);
-
-  // typing indicators
-  socket.on('chat:typing', (isTyping) => {
-    socket.to(room).emit('chat:typing', { userId, isTyping: !!isTyping });
+  console.info('[SOCKET HANDSHAKE]', {
+    origin,
+    hasToken: !!rawToken,
+    tokenPreview: rawToken ? preview(rawToken) : null,
+    projectId: projectIdRaw
   });
 
-  // send message
+  if (!rawToken) return next(new Error('No token'));
+
+  // verify JWT with precise errors
+  let payload;
+  try {
+    payload = jwt.verify(rawToken, process.env.JWT_SECRET);
+  } catch (e) {
+    console.error('[JWT VERIFY ERROR]', e.name, e.message);
+    if (e.name === 'TokenExpiredError') return next(new Error('Token expired'));
+    return next(new Error('Bad token'));
+  }
+
+  const projectId = Number(projectIdRaw);
+  if (!Number.isFinite(projectId)) return next(new Error('Bad project id'));
+
+  const access = await canChat(payload.userId, projectId);
+  if (!access.ok) return next(new Error(access.message));
+
+  socket.data.userId = payload.userId;
+  socket.data.projectId = projectId;
+  return next();
+});
+
+io.on('connection', (socket) => {
+  const room = `project:${socket.data.projectId}`;
+  socket.join(room);
+  console.info(`[SOCKET] user ${socket.data.userId} connected to ${room}`);
+
   socket.on('chat:send', async (payload, ack) => {
     try {
       const content = String(payload?.content || '').trim();
-      if (!content) return typeof ack === 'function' && ack({ ok: false, error: 'Empty message' });
-      if (content.length > 1000) return typeof ack === 'function' && ack({ ok: false, error: 'Too long' });
-
-      const msg = await ChatMessage.create({ content, senderId: userId, projectId });
-
-      const wire = {
-        id: msg.id,
-        content,
-        senderId: userId,
-        senderName: (await User.findByPk(userId, { attributes: ['name'] }))?.name || 'User',
-        projectId,
-        createdAt: msg.createdAt
-      };
-
-      // broadcast to room
+      if (!content) return ack?.({ ok:false, error:'Empty message' });
+      const msg = await ChatMessage.create({ content, senderId: socket.data.userId, projectId: socket.data.projectId });
+      const sender = await User.findByPk(socket.data.userId, { attributes: ['name'] });
+      const wire = { id: msg.id, content, senderId: socket.data.userId, senderName: sender?.name || 'User', projectId: socket.data.projectId, createdAt: msg.createdAt };
       io.to(room).emit('chat:new', wire);
-
-      return typeof ack === 'function' && ack({ ok: true, message: wire });
+      return ack?.({ ok:true, message: wire });
     } catch (e) {
-      console.error('chat:send error', e);
-      return typeof ack === 'function' && ack({ ok: false, error: 'Server error' });
+      console.error('[chat:send error]', e);
+      return ack?.({ ok:false, error:'Server error' });
     }
   });
 
   socket.on('disconnect', () => {
-    console.log(`INFO chat: user ${userId} left room ${room}`);
+    console.info(`[SOCKET] user ${socket.data.userId} disconnected from ${room}`);
   });
 });
-
 // routes here
 //1
 const authRouter = require('./routes/auth');
@@ -144,17 +135,10 @@ app.use('/', likesRouter)
 //6
 const membersRouter = require('./routes/members');
 app.use('/projects', membersRouter);
-//7
-const chatRouter = require('./routes/chat');
-app.use('/projects', chatRouter);
-
 
 
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () =>{
-    console.log(`Socket.io server listening on port ${PORT}`);
-});
-app.listen(PORT, ()=>{
-    console.log(`Server listening on port ${PORT}`);
+server.listen(PORT, () => {
+  console.log(`HTTP + Socket.IO listening on http://localhost:${PORT}`);
 });

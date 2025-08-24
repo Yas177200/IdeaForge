@@ -7,6 +7,7 @@ import NewCardForm from '../components/NewCardForm';
 import '../css/projectPage.css'
 import ChatToggle from '../Components/ChatToggle';
 import ChatPanel from '../Components/ChatPanel';
+import ProjectSubnav from '../Components/ProjectSubnav';
 
 export default function ProjectPage() {
   const token = localStorage.getItem('token');
@@ -47,15 +48,19 @@ export default function ProjectPage() {
   return (
     <div className="project-page">
       <div className="topbar">
-        <Link to="/">← Back to Dashboard</Link>
       </div>
-      <ProjectHeader
-        projectId={id}
-        onDelete={()=>navigate('/')}
-        onUpdated={()=> {/* a;lksdf;alskdjf;alskjf;lksadlkjsdflkjfsdjkl;ljk;sdf */}}
-      />
+      <section id='overview'>
+        <ProjectHeader
+          projectId={id}
+          onDelete={()=>navigate('/')}
+          onUpdated={()=> {/* a;lksdf;alskdjf;ajfsdjkl;ljk;sdf */}}
+        />
+      </section>
+      <ProjectSubnav onOpenChat={() => setChatOpen(true)}/>
 
-      <NewCardForm projectId={id} onCreated={fetchCards} />
+      <section id='cards' style={{scrollMarginTop: '5rem'}}>
+        <NewCardForm projectId={id} onCreated={fetchCards} />
+      </section>
 
       <div style={{ display: 'flex', gap: '.5rem', margin: '.5rem 0' }}>
         <button className={`btn ${filter==='ALL' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setFilter('ALL')}>All</button>

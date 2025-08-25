@@ -1,0 +1,21 @@
+.joinbar { margin: .5rem 0 1rem; }
+
+.joinbar-form {
+  display: flex; gap: .5rem; align-items: center;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 999px;
+  padding: .35rem .4rem .35rem .6rem;
+  box-shadow: 0 3px 10px rgba(0,0,0,.04);
+}
+
+.joinbar-input {
+  flex: 1;
+  border: none; outline: none;
+  font-size: 1rem;
+  min-width: 180px;
+}
+
+.joinbar-btn { border-radius: 999px; padding: .45rem .9rem; }
+
+.flash { margin:.4rem 0 0; font-size: .9rem; }
+.flash-ok  { color: #065f46; background:#ecfdf5; border:1px solid #34d399; padding:.35rem .5rem; border-radius:8px; }
+.flash-err { color: #991b1b; background:#fef2f2; border:1px solid #fca5a5; padding:.35rem .5rem; border-radius:8px; }

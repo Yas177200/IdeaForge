@@ -2,15 +2,15 @@ import PropTypes from "prop-types";
 import { useState } from "react";
 import api from "../api";
 import "../css/cards.css";
-import CommentsThread from "./CommentsThread";
+import CommentsModal from "./CommentsModal";
 import EditCardForm from "./EditCardForm";
 import LikeButton from "./LikeButton";
 
 export default function CardsList({ cards, onCardUpdated }) {
-  if (!cards.length) return <p>No cards yet.</p>;
+  if (!cards || !cards.length) return <p>No cards yet.</p>;
   return (
     <ul className="cards-list">
-      {cards.map(card => (
+      {cards.map((card) => (
         <CardRow key={card.id} card={card} onCardUpdated={onCardUpdated} />
       ))}
     </ul>
@@ -18,11 +18,11 @@ export default function CardsList({ cards, onCardUpdated }) {
 }
 
 function CardRow({ card, onCardUpdated }) {
-  const [showComments, setShowComments] = useState(false);
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
 
-  const me = JSON.parse(localStorage.getItem('user') || 'null');
+  const me = JSON.parse(localStorage.getItem("user") || "null");
   const isAuthor = me?.id === card.authorId;
 
   const toggleCompleted = async () => {
@@ -31,7 +31,9 @@ function CardRow({ card, onCardUpdated }) {
     const optimistic = { ...card, completed: !card.completed };
     onCardUpdated(optimistic);
     try {
-      const { data } = await api.patch(`/cards/${card.id}`, { completed: optimistic.completed });
+      const { data } = await api.patch(`/cards/${card.id}`, {
+        completed: optimistic.completed,
+      });
       onCardUpdated(data.card);
     } catch (e) {
       onCardUpdated(card);
@@ -58,6 +60,7 @@ function CardRow({ card, onCardUpdated }) {
       {!editing ? (
         <>
           <strong>{card.title}</strong>
+
           {card.imageUrl ? (
             <img
               src={card.imageUrl}
@@ -65,31 +68,50 @@ function CardRow({ card, onCardUpdated }) {
               onError={(e) => (e.currentTarget.style.display = "none")}
             />
           ) : null}
+
           {card.description && <p>{card.description}</p>}
 
           <div className="card-actions">
             <LikeButton cardId={card.id} />
-            <button className="btn btn-outline" onClick={() => setShowComments(v => !v)}>
-              {showComments ? "Hide Comments" : "Show Comments"}
+            <button
+              className="btn btn-outline"
+              onClick={() => setCommentsOpen(true)}
+            >
+              Comments
             </button>
+
             {isAuthor && (
-              <button className="btn btn-outline" onClick={() => setEditing(true)}>
+              <button
+                className="btn btn-outline"
+                onClick={() => setEditing(true)}
+              >
                 Edit
               </button>
             )}
+
             {isAuthor && (
-              <span><input type="checkbox" checked={card.completed} onChange={toggleCompleted} disabled={busy} /></span>            
+              <label style={{ display: "inline-flex", alignItems: "center", gap: ".35rem" }}>
+                <input
+                  type="checkbox"
+                  checked={card.completed}
+                  onChange={toggleCompleted}
+                  disabled={busy}
+                />
+                Mark completed
+              </label>
             )}
           </div>
 
-          {showComments && (
-            <div className="card-comments">
-              <CommentsThread cardId={card.id} />
-            </div>
+          {commentsOpen && (
+            <CommentsModal card={card} onClose={() => setCommentsOpen(false)} />
           )}
         </>
       ) : (
-        <EditCardForm card={card} onSaved={handleSaved} onCancel={() => setEditing(false)} />
+        <EditCardForm
+          card={card}
+          onSaved={handleSaved}
+          onCancel={() => setEditing(false)}
+        />
       )}
     </li>
   );
@@ -104,8 +126,8 @@ CardsList.propTypes = {
       description: PropTypes.string,
       imageUrl: PropTypes.string,
       completed: PropTypes.bool.isRequired,
-      authorId: PropTypes.number // used to gate the Edit button
+      authorId: PropTypes.number, 
     })
   ).isRequired,
-  onCardUpdated: PropTypes.func.isRequired
+  onCardUpdated: PropTypes.func.isRequired,
 };

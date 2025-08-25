@@ -60,9 +60,9 @@ export default function ProjectPage() {
 
   return (
     <div className="project-page">
-      <div className="topbar">
+      {/* <div className="topbar">
         <Link to="/">← Back to Dashboard</Link>
-      </div>
+      </div> */}
 
       <ProjectHeader
         projectId={id}

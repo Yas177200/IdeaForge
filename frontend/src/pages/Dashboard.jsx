@@ -4,6 +4,7 @@ import api from '../api';
 import ProjectTile from '../Components/ProjectTile';
 import PendingTile from '../Components/PendingTile';
 import '../css/dashbaord.css'
+import JoinBar from '../Components/Joinbar';
 
 export default function Dashboard() {
   const token = localStorage.getItem('token');
@@ -17,6 +18,15 @@ export default function Dashboard() {
   const [sort, setSort] = useState('NEWEST'); 
 
   const [error, setError] = useState('');
+
+  async function refreshPending() {
+    try{
+      const { data } = await api.get('/projects/p/pending');
+      setPending(data.projects || []);
+    }catch (err){
+      console.log(err);
+    }
+  }
 
   useEffect(() => {
     let alive = true;
@@ -127,9 +137,12 @@ export default function Dashboard() {
 
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '.5rem' }}>
           <Link className="btn btn-outline" to="/projects/new">Create Project</Link>
-          <Link className="btn btn-outline" to="/projects/join">Join Project</Link>
         </div>
       </div>
+
+      {tab === 'JOINED' && (
+        <JoinBar onApplied={refreshPending}/>
+      ) }
 
       <div className="project-grid">
         {tab !== 'PENDING' ? (

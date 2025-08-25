@@ -26,14 +26,21 @@ export default function Login() {
     };
 
     return (
-        <div className="auth-container">
-            <h2>Login</h2>
-            {error && <p className="error" >{error}</p>}
-            <form onSubmit={handleSubmit}>
-                <input name="email"     placeholder="Email"     type="email"        value={form.email}      onChange={handleChange} required/>
-                <input name="password"  placeholder="Password"  type="password"     value={form.password}   onChange={handleChange} required/>
-                <button type="submit">Login</button>
-            </form>
-        </div>
+        <>
+            <div className="auth-container">
+                <h2>Login</h2>
+                {error && <p className="error" >{error}</p>}
+                <form onSubmit={handleSubmit}>
+                    <input name="email"     placeholder="Email"     type="email"        value={form.email}      onChange={handleChange} required/>
+                    <input name="password"  placeholder="Password"  type="password"     value={form.password}   onChange={handleChange} required/>
+                    <button type="submit">Login</button>
+                    <p><a href="/register">Create new account</a></p>
+                </form>
+            </div>
+            <div className="auth-container">
+                <h2>Wanna whats IdeaForge? Who is behind it?</h2>
+                <p style={{fontSize: 'larger', textAlign: 'center'}}>Read about it <a href="/about">here</a></p>
+            </div>
+        </>
     );
 }

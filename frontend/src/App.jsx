@@ -7,6 +7,7 @@ import ProjectPage from './pages/ProjectPage';
 import AuthNavbar from './Components/AuthNavbar';
 import Profile from './pages/Profile';
 import About from './pages/About';
+import NotFound404 from './pages/Notfound404';
 
 function App() {
   const token = localStorage.getItem('token');
@@ -24,6 +25,7 @@ function App() {
             <Route path="/projects/new"   element={<NewProject />} />
             <Route path="/projects/:id"   element={<ProjectPage />} />
             <Route path="/profile"        element={<Profile />} />
+            <Route path='*'               element={<NotFound404 />} />
           </>
         ) : (
           <Route path="*" element={<Navigate to="/login" replace />} />

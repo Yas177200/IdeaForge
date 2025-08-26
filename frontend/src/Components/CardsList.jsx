@@ -24,6 +24,7 @@ function CardRow({ card, onCardUpdated }) {
 
   const me = JSON.parse(localStorage.getItem("user") || "null");
   const isAuthor = me?.id === card.authorId;
+  const hasImage = !!card.imageUrl;
 
   const toggleCompleted = async () => {
     if (busy) return;
@@ -49,7 +50,7 @@ function CardRow({ card, onCardUpdated }) {
   };
 
   return (
-    <li className="card-item">
+    <li className={`card-item ${hasImage ? "has-image" : "no-image"}`}>
       <div className="card-head">
         <span className="card-type">{card.type}</span>
         <span className={`card-status ${card.completed ? "done" : "open"}`}>
@@ -59,45 +60,46 @@ function CardRow({ card, onCardUpdated }) {
 
       {!editing ? (
         <>
-          <strong>{card.title}</strong>
+          <div className="card-body">
+            <h2 className="card-title" title={card.title}>{card.title}</h2>
 
-          {card.imageUrl ? (
-            <img
-              src={card.imageUrl}
-              alt="card"
-              onError={(e) => (e.currentTarget.style.display = "none")}
-            />
-          ) : null}
+            {hasImage && (
+              <div className="card-media">
+                <img
+                  src={card.imageUrl}
+                  alt="card"
+                  onError={(e) => (e.currentTarget.style.display = "none")}
+                />
+              </div>
+            )}
 
-          {card.description && <p>{card.description}</p>}
+            {card.description && (
+              <p className="card-desc" title={card.description}>
+                {card.description}
+              </p>
+            )}
+          </div>
 
           <div className="card-actions">
             <LikeButton cardId={card.id} />
-            <button
-              className="btn btn-outline"
-              onClick={() => setCommentsOpen(true)}
-            >
+            <button className="btn btn-outline" onClick={() => setCommentsOpen(true)}>
               Comments
             </button>
 
             {isAuthor && (
-              <button
-                className="btn btn-outline"
-                onClick={() => setEditing(true)}
-              >
+              <button className="btn btn-outline" onClick={() => setEditing(true)}>
                 Edit
               </button>
             )}
 
             {isAuthor && (
-              <label style={{ display: "inline-flex", alignItems: "center", gap: ".35rem" }}>
+              <label className="inline-check">
                 <input
                   type="checkbox"
                   checked={card.completed}
                   onChange={toggleCompleted}
                   disabled={busy}
                 />
-                Mark completed
               </label>
             )}
           </div>
@@ -126,7 +128,7 @@ CardsList.propTypes = {
       description: PropTypes.string,
       imageUrl: PropTypes.string,
       completed: PropTypes.bool.isRequired,
-      authorId: PropTypes.number, 
+      authorId: PropTypes.number,
     })
   ).isRequired,
   onCardUpdated: PropTypes.func.isRequired,

@@ -135,6 +135,9 @@ app.use('/', likesRouter)
 //6
 const membersRouter = require('./routes/members');
 app.use('/projects', membersRouter);
+//8
+const meRouter = require('./routes/me');
+app.use('/', meRouter);
 
 
 

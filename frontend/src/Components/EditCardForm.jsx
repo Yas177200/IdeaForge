@@ -1,86 +1,128 @@
-import { useState } from "react";
-import PropTypes, { func } from "prop-types";
-import api from "../api";
+import PropTypes from 'prop-types';
+import { useState } from 'react';
+import api from '../api';
 
-const TYPE_OPTIONS = ['FEATURE', 'BUG', 'IDEA', 'SKETCH'];
+const TYPES = ['FEATURE','BUG','IDEA','SKETCH'];
 
-export default function EditCardForm({card, onSaved, onCancel}) {
-  const [form, setForm] = useState({
-    type: card.type,
-    title: card.title,
-    description: card.description || '',
-    imageUrl: card.imageUrl || '',
-    completed: !!card.completed
-  });
-  const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState('');
+export default function EditCardForm({ card, onSaved, onCancel }) {
+  const MAX_DESC = 120;
 
-  const handleChange = e => {
-    const { name, value, type, checked } = e.target;
-    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  const [type, setType] = useState(card.type);
+  const [title, setTitle] = useState(card.title);
+  const [desc, setDesc] = useState(card.description || '');
+  const [descCount, setDescCount] = useState((card.description || '').length);
+  const [completed, setCompleted] = useState(!!card.completed);
+
+  const [file, setFile] = useState(null); 
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const handleDescChange = e => {
+    const v = e.target.value;
+    setDesc(v);
+    setDescCount(v.length);
   };
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setErr('');
-    if (!form.title.trim()) return setErr('Title is required.');
-    if (!TYPE_OPTIONS.includes(form.type)) return setErr('Invalid type.');
-    
+  const save = async (e) => {
+    e?.preventDefault?.();
+    setError('');
+    if (!TYPES.includes(type)) return setError('Please choose a valid type.');
+    if (!title.trim()) return setError('Title is required.');
+
+    setBusy(true);
     try {
-        setSaving(true);
-        const { data } = await api.patch(`/cards/${card.id}`, {
-            type: form.type,
-            title: form.title,
-            description: form.description,
-            imageUrl: form.imageUrl,
-            completed: form.completed
+      const basePayload = {
+        type,
+        title: title.trim(),
+        description: desc,
+        completed,
+        imageUrl: imageUrl?.trim() || null
+      };
+      const { data: patchRes } = await api.patch(`/cards/${card.id}`, basePayload);
+      let updated = patchRes.card;
+
+      if (file) {
+        setUploading(true);
+        const fd = new FormData();
+        fd.append('image', file);
+        const { data: imgRes } = await api.post(`/cards/${card.id}/image`, fd, {
+          headers: { 'Content-Type': 'multipart/form-data' }
         });
-        onSaved?.(data.card);
-    } catch (e) {
-      setErr(e.response?.data?.message || 'Failed to save changes');
+        updated = imgRes.card;
+      }
+
+      onSaved?.(updated);
+    } catch (e2) {
+      setError(e2.response?.data?.message || 'Failed to save card');
     } finally {
-        setSaving(false);
+      setUploading(false);
+      setBusy(false);
     }
   };
 
   return (
-    <form className="card-edit-form" onSubmit={handleSubmit}>
-      {err && <p className="error">{err}</p>}
+    <form className="form-grid" onSubmit={save}>
+      {error && <p className="error">{error}</p>}
 
       <label>
-        Type
-        <select name="type" value={form.type} onChange={handleChange} disabled={saving}>
-          {TYPE_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+        <span>Type</span>
+        <select
+          style={{ padding: '5px', border: '1px solid aqua', borderRadius: '5px' }}
+          value={type}
+          onChange={e => setType(e.target.value)}
+        >
+          {TYPES.map(t => <option key={t} value={t}>{t[0] + t.slice(1).toLowerCase()}</option>)}
         </select>
       </label>
 
       <label>
-        Title
-        <input name="title" value={form.title} onChange={handleChange} disabled={saving} required />
+        <span>Title</span>
+        <input value={title} onChange={e => setTitle(e.target.value)} />
       </label>
 
       <label>
-        Description
-        <textarea name="description" value={form.description} onChange={handleChange} disabled={saving} />
+        <span>Description</span>
+        <textarea
+          rows="4"
+          value={desc}
+          onChange={handleDescChange}
+          maxLength={MAX_DESC}
+          placeholder={`Details... (${MAX_DESC} characters max)`}
+        />
+        <div style={{ textAlign: 'right', fontSize: '.85rem', color: '#64748b' }}>
+          {descCount}/{MAX_DESC}
+        </div>
       </label>
 
-      <label>
-        Image URL
-        <input name="imageUrl" value={form.imageUrl} onChange={handleChange} disabled={saving} />
+      <label className="inline-check">
+        <input type="checkbox" checked={completed} onChange={e => setCompleted(e.target.checked)} />
+        Mark completed
       </label>
 
-      <label className="inline">
-        <input type="checkbox" name="completed" checked={form.completed} onChange={handleChange} disabled={saving} />
-        Completed
-      </label>
+      <fieldset style={{ border: '1px dashed #e5e7eb', borderRadius: 8, padding: '.6rem' }}>
+        <legend style={{ fontSize: '.9rem', color: '#64748b' }}>Image</legend>
 
-      <div className="actions">
-        <button type="button" className="btn btn-outline" onClick={onCancel} disabled={saving}>Cancel</button>
-        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
+        <label style={{ display: 'grid', gap: '.25rem', marginBottom: '.5rem' }}>
+          <span>Replace with file (compressed ≤ 400KB by server)</span>
+          <input type="file" accept="image/*" onChange={e => setFile(e.target.files?.[0] || null)} />
+          {file && (
+            <small style={{ color: '#64748b' }}>
+              Selected: {file.name} ({Math.ceil(file.size / 1024)} KB before compression)
+            </small>
+          )}
+        </label>
+
+      </fieldset>
+
+      <div style={{ display: 'flex', gap: '.5rem', justifyContent: 'flex-end', marginTop: '.5rem' }}>
+        <button type="button" className="btn btn-outline" onClick={onCancel}>Cancel</button>
+        <button className="btn btn-primary" disabled={busy || uploading || !title.trim() || !TYPES.includes(type)}>
+          {uploading ? 'Saving + Uploading…' : (busy ? 'Saving…' : 'Save')}
+        </button>
       </div>
     </form>
-  )
-
+  );
 }
 
 EditCardForm.propTypes = {
@@ -90,8 +132,8 @@ EditCardForm.propTypes = {
     title: PropTypes.string.isRequired,
     description: PropTypes.string,
     imageUrl: PropTypes.string,
-    completed: PropTypes.bool
+    completed: PropTypes.bool.isRequired
   }).isRequired,
-  onSaved: PropTypes.func,
-  onCancel: PropTypes.func
+  onSaved: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired
 };

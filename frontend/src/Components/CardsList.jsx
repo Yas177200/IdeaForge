@@ -6,18 +6,24 @@ import CommentsModal from "./CommentsModal";
 import EditCardForm from "./EditCardForm";
 import LikeButton from "./LikeButton";
 
-export default function CardsList({ cards, onCardUpdated }) {
+export default function CardsList({ cards, onCardUpdated, onOpenComments }) {
   if (!cards || !cards.length) return <p>No cards yet.</p>;
   return (
     <ul className="cards-list">
       {cards.map((card) => (
-        <CardRow key={card.id} card={card} onCardUpdated={onCardUpdated} />
+        <CardRow
+          key={card.id}
+          card={card}
+          onCardUpdated={onCardUpdated}
+          onOpenComments={onOpenComments}
+        />
       ))}
     </ul>
   );
 }
 
-function CardRow({ card, onCardUpdated }) {
+function CardRow({ card, onCardUpdated, onOpenComments }) {
+  const safeUpdate = onCardUpdated || (() => {});
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -30,14 +36,14 @@ function CardRow({ card, onCardUpdated }) {
     if (busy) return;
     setBusy(true);
     const optimistic = { ...card, completed: !card.completed };
-    onCardUpdated(optimistic);
+    safeUpdate(optimistic);
     try {
       const { data } = await api.patch(`/cards/${card.id}`, {
         completed: optimistic.completed,
       });
-      onCardUpdated(data.card);
+      safeUpdate(data.card);
     } catch (e) {
-      onCardUpdated(card);
+      safeUpdate(card); // rollback
       console.error("Failed to toggle completed", e);
     } finally {
       setBusy(false);
@@ -45,8 +51,13 @@ function CardRow({ card, onCardUpdated }) {
   };
 
   const handleSaved = (updated) => {
-    onCardUpdated(updated);
+    safeUpdate(updated);
     setEditing(false);
+  };
+
+  const openComments = () => {
+    if (onOpenComments) onOpenComments(card);
+    else setCommentsOpen(true);
   };
 
   return (
@@ -82,7 +93,7 @@ function CardRow({ card, onCardUpdated }) {
 
           <div className="card-actions">
             <LikeButton cardId={card.id} />
-            <button className="btn btn-outline" onClick={() => setCommentsOpen(true)}>
+            <button className="btn btn-outline" onClick={openComments}>
               Comments
             </button>
 
@@ -104,7 +115,7 @@ function CardRow({ card, onCardUpdated }) {
             )}
           </div>
 
-          {commentsOpen && (
+          {!onOpenComments && commentsOpen && (
             <CommentsModal card={card} onClose={() => setCommentsOpen(false)} />
           )}
         </>
@@ -131,5 +142,6 @@ CardsList.propTypes = {
       authorId: PropTypes.number,
     })
   ).isRequired,
-  onCardUpdated: PropTypes.func.isRequired,
+  onCardUpdated: PropTypes.func,     
+  onOpenComments: PropTypes.func,    
 };

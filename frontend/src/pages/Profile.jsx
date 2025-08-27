@@ -21,6 +21,9 @@ export default function Profile() {
   const [busyInfo, setBusyInfo] = useState(false);
   const [busyPwd, setBusyPwd] = useState(false);
 
+  const [file, setFile] = useState(null);
+  const [busyUpload, setBusyUpload] = useState(false);
+
   useEffect(() => {
     let alive = true;
     if (!me) {
@@ -43,8 +46,8 @@ export default function Profile() {
       setLoading(false);
     }
     return () => { alive = false; };
-  }, []);
-  
+  }, []); 
+
   const saveInfo = async (e) => {
     e?.preventDefault?.();
     setBusyInfo(true); setMsg(''); setErr('');
@@ -74,6 +77,28 @@ export default function Profile() {
     }
   };
 
+  const uploadAvatar = async (e) => {
+    e?.preventDefault?.();
+    if (!file) return;
+    setMsg(''); setErr(''); setBusyUpload(true);
+    try {
+      const fd = new FormData();
+      fd.append('avatar', file);
+      const { data } = await api.post('/me/avatar', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setMe(data.user);
+      setAvatarUrl(data.user.avatarUrl || '');
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setMsg('Avatar updated (compressed to ≤100KB).');
+      setFile(null);
+    } catch (e) {
+      setErr(e.response?.data?.message || 'Failed to upload avatar');
+    } finally {
+      setBusyUpload(false);
+    }
+  };
+
   if (loading) return <p>Loading…</p>;
 
   return (
@@ -92,13 +117,19 @@ export default function Profile() {
           <div className="avatar-row">
             <div className="avatar-preview">
               {avatarUrl ? (
-                <img src={avatarUrl} alt="avatar" onError={(e)=>{e.currentTarget.style.display='none';}} />
+                <img
+                  src={avatarUrl}
+                  alt="avatar"
+                  onError={(e)=>{ e.currentTarget.style.display='none'; }}
+                />
               ) : (
                 <div className="avatar-fallback">{(name || 'U?').slice(0,2).toUpperCase()}</div>
               )}
             </div>
             <div className="avatar-hint">
-              <p className="muted">Paste an image URL for your avatar. (Uploads coming later.)</p>
+              <p className="muted">
+                You can paste a public image URL or upload a file below (its best if its a squared image like 400x400; we’ll downscale & compress).
+              </p>
             </div>
           </div>
 
@@ -115,10 +146,28 @@ export default function Profile() {
               <span>Bio</span>
               <textarea rows="4" value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell us a bit…" />
             </label>
-
             <div className="row-end">
               <button className="btn btn-primary" disabled={busyInfo || !name.trim()}>
                 {busyInfo ? 'Saving…' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div className="profile-card">
+          <h2>Upload Avatar (≤100KB)</h2>
+          <form className="form-grid" onSubmit={uploadAvatar}>
+            <label>
+              <span>Choose Image</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+            </label>
+            <div className="row-end">
+              <button className="btn btn-primary" disabled={!file || busyUpload}>
+                {busyUpload ? 'Uploading…' : 'Upload'}
               </button>
             </div>
           </form>

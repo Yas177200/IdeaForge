@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, Link, Navigate, useNavigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import api from '../api';
 import CardsList from '../components/CardsList';
 import ProjectHeader from '../components/ProjectHeader';
@@ -7,24 +7,24 @@ import ProjectSubnav from '../components/ProjectSubnav';
 import NewCardModal from '../components/NewCardModal';
 import CommentsModal from '../components/CommentsModal';
 import ChatPanel from '../components/ChatPanel';
-import '../css/projectPage.css'
+import '../css/projectPage.css';
 
 export default function ProjectPage() {
   const token = localStorage.getItem('token');
   if (!token) return <Navigate to="/login" replace />;
 
-  const { id } = useParams(); // projectId
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [project, setProject] = useState(null);
   const [cards, setCards] = useState([]);
   const [error, setError] = useState('');
-  const [filter, setFilter] = useState('ALL'); // ALL | OPEN | DONE
-  const [activeTab, setActiveTab] = useState('board'); // board | overview
+  const [filter, setFilter] = useState('ALL');
+  const [activeTab, setActiveTab] = useState('board');
 
   const [newCardOpen, setNewCardOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  const [commentsFor, setCommentsFor] = useState(null); // card object
+  const [commentsFor, setCommentsFor] = useState(null);
 
   const loadProject = useCallback(async () => {
     try {
@@ -49,6 +49,11 @@ export default function ProjectPage() {
     loadCards();
   }, [loadProject, loadCards]);
 
+  // updater passed to CardsList
+  const handleCardUpdated = useCallback((updated) => {
+    setCards(prev => prev.map(c => (c.id === updated.id ? updated : c)));
+  }, []);
+
   const filtered = cards.filter(c => {
     if (filter === 'OPEN') return !c.completed;
     if (filter === 'DONE') return !!c.completed;
@@ -60,10 +65,6 @@ export default function ProjectPage() {
 
   return (
     <div className="project-page">
-      {/* <div className="topbar">
-        <Link to="/">← Back to Dashboard</Link>
-      </div> */}
-
       <ProjectHeader
         projectId={id}
         onDeleted={() => navigate('/')}
@@ -98,6 +99,7 @@ export default function ProjectPage() {
 
           <CardsList
             cards={filtered}
+            onCardUpdated={handleCardUpdated}
             onOpenComments={(card) => setCommentsFor(card)}
           />
         </section>

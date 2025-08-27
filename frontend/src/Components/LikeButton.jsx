@@ -45,7 +45,7 @@ export default function LikeButton({cardId}) {
 
     return (
         <button className={`btn ${liked? 'btn-primary' : 'btn-outline'}`} onClick={toggle}>
-            {liked ? 'Liked' : 'Like'} • {count}
+            {liked ? '❤️' : '🩶'}  {count}
         </button>
     )
 }

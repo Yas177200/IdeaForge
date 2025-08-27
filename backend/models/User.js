@@ -6,6 +6,7 @@ module.exports = (sequelize, DataTypes) => {
         passwordHash:   {type: DataTypes.STRING, allowNull: false},
         name:           {type: DataTypes.STRING, allowNull: false},
         avatarUrl:      DataTypes.STRING,
+        avatarPath:      DataTypes.STRING,
         bio:            DataTypes.TEXT
     });
 

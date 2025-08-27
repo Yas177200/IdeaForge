@@ -34,7 +34,6 @@ export default function NewCardModal({ projectId, onCreated, onClose }) {
         type,
         title: title.trim(),
         description: desc,
-        imageUrl: imageUrl?.trim() || null,
         completed: false
       };
       const { data } = await api.post(`/projects/${projectId}/cards`, payload);

@@ -37,7 +37,6 @@ export default function EditCardForm({ card, onSaved, onCancel }) {
         title: title.trim(),
         description: desc,
         completed,
-        imageUrl: imageUrl?.trim() || null
       };
       const { data: patchRes } = await api.patch(`/cards/${card.id}`, basePayload);
       let updated = patchRes.card;

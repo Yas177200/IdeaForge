@@ -6,6 +6,8 @@ const http = require('http');
 const { Server } = require('socket.io');
 const { Op } = require('sequelize');
 const jwt = require('jsonwebtoken');
+const path = require('path');
+const uploadsDir = process.env.UPLOADS_DIR || 'uploads';
 
 //models
 const db = require('./models');
@@ -14,6 +16,8 @@ const { User, Project, ProjectMembership, ChatMessage } = require('./models');
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, uploadsDir), { maxAge: '15d' }));
+
 
 const sequelize = new Sequelize(process.env.DATABASE_URL);
 
@@ -138,7 +142,9 @@ app.use('/projects', membersRouter);
 //8
 const meRouter = require('./routes/me');
 app.use('/', meRouter);
-
+//9
+const { scheduleDailyCleanup } = require('./services/cleanup');
+scheduleDailyCleanup(sequelize);
 
 
 const PORT = process.env.PORT || 3000;

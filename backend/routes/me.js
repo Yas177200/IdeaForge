@@ -1,7 +1,11 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const auth = require('../middleware/auth');
-
+const fs = require('fs');
+const fsp = fs.promises;
+const path = require('path');
+const upload = require('../middleware/upload');
+const { compressToTarget } = require('../utils/image');
 const router = express.Router();
 
 router.get('/me', auth, async (req, res) => {
@@ -72,6 +76,58 @@ router.patch('/me/password', auth, async (req, res) => {
     res.json({ ok: true, message: 'Password updated.' });
   } catch (e) {
     console.error('PATCH /me/password error:', e);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || '').replace(/\/$/, '');
+const uploadsDir = process.env.UPLOADS_DIR || 'uploads';
+
+router.post('/me/avatar', auth, upload.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+
+    const outDir = path.join(__dirname, '..', uploadsDir, 'avatars');
+    await fsp.mkdir(outDir, { recursive: true });
+
+    const { buffer } = await compressToTarget(req.file.buffer, {
+      maxBytes: 100 * 1024,
+      maxWidth: 256,
+      maxHeight: 256
+    });
+
+    const filename = `user-${req.user.id}-${Date.now()}.webp`;
+    const outPath = path.join(outDir, filename);
+    await fsp.writeFile(outPath, buffer);
+
+    const prev = req.user.avatarPath;
+    if (prev && prev.startsWith('avatars/')) {
+      const prevAbs = path.join(__dirname, '..', uploadsDir, prev);
+      fs.existsSync(prevAbs) && (await fsp.unlink(prevAbs).catch(()=>{}));
+    }
+
+    req.user.avatarPath = `avatars/${filename}`;
+    req.user.avatarUrl  = `${PUBLIC_BASE_URL}/uploads/${req.user.avatarPath}`;
+    await req.user.save();
+
+    res.status(201).json({
+      user: {
+        id: req.user.id,
+        email: req.user.email,
+        name: req.user.name,
+        avatarUrl: req.user.avatarUrl,
+        bio: req.user.bio
+      }
+    });
+  } catch (e) {
+    console.error('POST /me/avatar error:', e);
+    if (e.message === 'Unsupported file type') {
+      return res.status(400).json({ message: 'Only JPG/PNG/WEBP/GIF allowed' });
+    }
+    if (e.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ message: 'File too large (max 5MB upload)' });
+    }
     res.status(500).json({ message: 'Internal server error' });
   }
 });

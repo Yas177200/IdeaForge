@@ -6,6 +6,7 @@ module.exports = (sequelize, DataTypes) => {
         title:          { type: DataTypes.STRING, allowNull: false },
         description:    DataTypes.TEXT,
         imageUrl:       DataTypes.STRING,
+        imagePath:       DataTypes.STRING,
         completed:      { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
     });
 

@@ -10,8 +10,8 @@
 
 /* card shell */
 .card-item {
-  --card-h: 340px;            /* overall height target */
-  --media-h: 150px;           /* image box height */
+  --card-h: 340px;            
+  --media-h: 150px;          
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;

@@ -7,18 +7,20 @@ const TYPES = ['FEATURE','BUG','IDEA','SKETCH'];
 export default function EditCardForm({ card, onSaved, onCancel }) {
   const MAX_DESC = 120;
 
-  const [type, setType] = useState(card.type);
+  const [type, setType]   = useState(card.type);
   const [title, setTitle] = useState(card.title);
-  const [desc, setDesc] = useState(card.description || '');
+  const [desc, setDesc]   = useState(card.description || '');
   const [descCount, setDescCount] = useState((card.description || '').length);
-  const [completed, setCompleted] = useState(!!card.completed);
 
-  const [file, setFile] = useState(null); 
+  // keep current completed value; remove if you control it elsewhere
+  const completed = card.completed;
+
+  const [file, setFile] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const handleDescChange = e => {
+  const handleDescChange = (e) => {
     const v = e.target.value;
     setDesc(v);
     setDescCount(v.length);
@@ -45,9 +47,11 @@ export default function EditCardForm({ card, onSaved, onCancel }) {
         setUploading(true);
         const fd = new FormData();
         fd.append('image', file);
-        const { data: imgRes } = await api.post(`/cards/${card.id}/image`, fd, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const { data: imgRes } = await api.post(
+          `/cards/${card.id}/image`,
+          fd,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
         updated = imgRes.card;
       }
 
@@ -61,62 +65,72 @@ export default function EditCardForm({ card, onSaved, onCancel }) {
   };
 
   return (
-    <form className="form-grid" onSubmit={save}>
+    <form className="card-edit-form" onSubmit={save}>
       {error && <p className="error">{error}</p>}
 
-      <label>
-        <span>Type</span>
+      <label className="form-row">
+        <span className="form-label">Type</span>
         <select
-          style={{ padding: '5px', border: '1px solid aqua', borderRadius: '5px' }}
+          className="form-control type-select"
           value={type}
           onChange={e => setType(e.target.value)}
         >
-          {TYPES.map(t => <option key={t} value={t}>{t[0] + t.slice(1).toLowerCase()}</option>)}
+          {TYPES.map(t => (
+            <option key={t} value={t}>{t[0] + t.slice(1).toLowerCase()}</option>
+          ))}
         </select>
       </label>
 
-      <label>
-        <span>Title</span>
-        <input value={title} onChange={e => setTitle(e.target.value)} />
+      <label className="form-row">
+        <span className="form-label">Title</span>
+        <input
+          className="form-control"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+        />
       </label>
 
-      <label>
-        <span>Description</span>
+      <label className="form-row">
+        <span className="form-label">Description</span>
         <textarea
+          className="form-control"
           rows="4"
           value={desc}
           onChange={handleDescChange}
           maxLength={MAX_DESC}
           placeholder={`Details... (${MAX_DESC} characters max)`}
         />
-        <div style={{ textAlign: 'right', fontSize: '.85rem', color: '#64748b' }}>
+        <div className="desc-count">
           {descCount}/{MAX_DESC}
         </div>
       </label>
 
-      <label className="inline-check">
-        <input type="checkbox" checked={completed} onChange={e => setCompleted(e.target.checked)} />
-        Mark completed
-      </label>
+      <fieldset className="image-fieldset" style={{maxWidth: '250px'}}>
+        <legend className="image-legend">Image</legend>
 
-      <fieldset style={{ border: '1px dashed #e5e7eb', borderRadius: 8, padding: '.6rem' }}>
-        <legend style={{ fontSize: '.9rem', color: '#64748b' }}>Image</legend>
-
-        <label style={{ display: 'grid', gap: '.25rem', marginBottom: '.5rem' }}>
+        <label className="file-group">
           <span>Replace with file (compressed ≤ 400KB by server)</span>
-          <input type="file" accept="image/*" onChange={e => setFile(e.target.files?.[0] || null)} />
+          <input
+            className="form-control"
+            type="file"
+            accept="image/*"
+            style={{width:'250px'}}
+            onChange={e => setFile(e.target.files?.[0] || null)}
+          />
           {file && (
-            <small style={{ color: '#64748b' }}>
+            <small className="muted">
               Selected: {file.name} ({Math.ceil(file.size / 1024)} KB before compression)
             </small>
           )}
         </label>
-
       </fieldset>
 
-      <div style={{ display: 'flex', gap: '.5rem', justifyContent: 'flex-end', marginTop: '.5rem' }}>
+      <div className="actions">
         <button type="button" className="btn btn-outline" onClick={onCancel}>Cancel</button>
-        <button className="btn btn-primary" disabled={busy || uploading || !title.trim() || !TYPES.includes(type)}>
+        <button
+          className="btn btn-primary"
+          disabled={busy || uploading || !title.trim() || !TYPES.includes(type)}
+        >
           {uploading ? 'Saving + Uploading…' : (busy ? 'Saving…' : 'Save')}
         </button>
       </div>

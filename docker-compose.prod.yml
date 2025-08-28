@@ -1,0 +1,49 @@
+# docker-compose.prod.yml
+
+services:
+  db:
+    image: postgres:14
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ideaforge
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: ideaforge
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    # no host port exposed in prod
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://ideaforge:secret@db:5432/ideaforge
+      JWT_SECRET: ${JWT_SECRET}                 # put in a .env file next to this compose
+      PUBLIC_BASE_URL: https://abdulmala.de/ideaforge
+      UPLOADS_DIR: uploads
+      IMAGE_TTL_DAYS: 15
+    volumes:
+      - ./backend/uploads:/app/uploads         # persist user uploads
+    depends_on:
+      - db
+    # bind only to loopback so it's not publicly reachable; Apache reverse-proxies to it
+    ports:
+      - "127.0.0.1:3000:3000"
+
+  frontend:
+    build:
+      context: ./frontend
+      # Your Dockerfile should build the Vite app and serve it (e.g., via nginx)
+      args:
+        - VITE_BACKEND_URL=https://abdulmala.de/ideaforge/api
+    restart: unless-stopped
+    depends_on:
+      - backend
+    # serve static site on :80 inside the container; expose to host :8080 for Apache
+    ports:
+      - "127.0.0.1:8080:80"
+
+volumes:
+  db_data:

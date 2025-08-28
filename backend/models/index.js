@@ -41,9 +41,10 @@ Object.values(models)
     }
   });
 
-// 4) Sync the database (DEV ONLY)
+const alter = process.env.NODE_ENV !== 'production';
+
 sequelize
-  .sync({ alter: true })
+  .sync({ alter })
   .then(() => console.log('✅ Models synchronized (alter:true)'))
   .catch(err => console.error('❌ Sync error:', err));
 
